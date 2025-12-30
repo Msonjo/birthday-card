@@ -78,15 +78,28 @@
 
         .photo-frame {
             position: relative;
-            padding: 8px;
+            padding: 10px;
             background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: rotate(-2deg);
-            transition: transform 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: rotate(-1deg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
         .photo-frame:hover {
-            transform: rotate(0deg) scale(1.02);
+            transform: rotate(0deg) scale(1.03);
             z-index: 20;
+        }
+        .photo-frame:active {
+            transform: scale(0.95);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -115,228 +128,184 @@
             <h2 class="text-2xl text-gray-600">To my amazing Sister</h2>
         </div>
 
-        <!-- NEW: Photo Placeholder Section -->
-        <!-- 
-           INSTRUCTIONS: 
-           1. Go to Google Photos and open your image.
-           2. Right-click the image and select "Copy Image Address" (or "Copy Image Link").
-           3. Paste that link inside the src="" attribute of the <img> tag below.
-        -->
-        <div class="mb-8 flex justify-center">
-            <div class="photo-frame rounded-xl w-64 h-80 flex items-center justify-center bg-gray-50">
+        <!-- PHOTO GALLERY SECTION -->
+        <div class="mb-4 flex flex-col items-center">
+            <div id="photo-container" class="photo-frame rounded-xl w-64 h-64 flex items-center justify-center bg-gray-50 relative overflow-hidden">
                 <img 
-                    src="sister.jpg"
+                    id="photo-display"
+                    src="sister.jpg" 
                     alt="Birthday Girl" 
                     class="w-full h-full object-cover rounded-lg"
-                    onerror="this.src='https://placehold.co/400x400/pink/white?text=Put+Photo+Link+Here'; this.onerror=null;"
+                    onerror="this.src='https://placehold.co/400x400/pink/white?text=Add+Photo+1'; this.style.opacity='0.5';"
                 >
+                
+                <!-- Hint Overlay -->
+                <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+                    <i data-lucide="mouse-pointer-2" class="w-3 h-3"></i>
+                    <span>Click to flip</span>
+                </div>
+
                 <!-- Decorative sticker -->
-                <div class="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 rounded-full p-2 shadow-md transform rotate-12">
+                <div class="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 rounded-full p-2 shadow-md transform rotate-12 pointer-events-none">
                     <i data-lucide="crown" class="w-6 h-6"></i>
                 </div>
             </div>
+            <p class="text-xs text-gray-400 mt-3 italic" id="photo-counter">Photo 1 of 4</p>
         </div>
 
         <!-- Interactive Cake Area -->
-        <div class="relative w-32 h-32 mx-auto mb-6 bg-gradient-to-tr from-pink-200 to-purple-200 rounded-full flex items-center justify-center shadow-inner overflow-hidden group">
-            <!-- Cake -->
+        <div class="relative w-28 h-28 mx-auto mb-6 bg-gradient-to-tr from-pink-200 to-purple-200 rounded-full flex items-center justify-center shadow-inner overflow-hidden group">
             <div id="cake-container" class="relative transition-transform duration-500 transform group-hover:scale-110 top-2">
-                 <!-- Cake Base -->
-                 <div class="w-20 h-14 bg-amber-200 rounded-lg relative mt-6 shadow-md">
-                     <!-- Frosting -->
+                 <div class="w-16 h-12 bg-amber-200 rounded-lg relative mt-6 shadow-md">
                      <div class="absolute -top-2 w-full h-4 bg-pink-300 rounded-full"></div>
                      <div class="absolute top-1 w-full h-6 bg-pink-300 rounded-b-lg opacity-50"></div>
                  </div>
-                 <!-- Candle -->
-                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3 h-8 bg-blue-300 border border-blue-400"></div>
-                 <!-- Flame -->
-                 <div id="flame" class="flame absolute -top-6 left-1/2 transform -translate-x-1/2 w-3 h-5 bg-yellow-400 rounded-full blur-[1px] shadow-[0_0_10px_#facc15]"></div>
+                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-6 bg-blue-300 border border-blue-400"></div>
+                 <div id="flame" class="flame absolute -top-5 left-1/2 transform -translate-x-1/2 w-3 h-5 bg-yellow-400 rounded-full blur-[1px] shadow-[0_0_10px_#facc15]"></div>
             </div>
-            
-            <!-- Success Message (Hidden by default) -->
             <div id="wish-success" class="absolute inset-0 flex items-center justify-center bg-white/90 opacity-0 transition-opacity duration-500 pointer-events-none">
-                <p class="text-sm font-bold text-purple-600 font-pacifico">Wish Made!</p>
+                <p class="text-xs font-bold text-purple-600 font-pacifico">Wish Made!</p>
             </div>
         </div>
 
         <!-- Message -->
-        <p class="text-gray-600 mb-8 leading-relaxed px-2">
-            Wishing you a day filled with love, laughter, and all your favorite things. You aren't just my sister, you're my best friend. Here's to another year of being fabulous! ✨
+        <p class="text-gray-600 mb-8 leading-relaxed px-2 italic">
+            "Wishing you a day filled with love, laughter, and all your favorite things. You aren't just my sister, you're my best friend."
         </p>
 
         <!-- Actions -->
         <div class="space-y-3">
             <button id="blow-candle-btn" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
                 <i data-lucide="wind" class="w-5 h-5"></i>
-                <span>Make a Wish & Blow Candle</span>
+                <span>Blow the Candle</span>
             </button>
-        </div>
-
-        <div class="mt-8 text-sm text-gray-400">
-            With love, [Your Name]
         </div>
     </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm font-semibold flex items-center gap-2">
-        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+        <i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i>
         <span id="toast-message">Notification</span>
     </div>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // --- Logic ---
         const blowBtn = document.getElementById('blow-candle-btn');
         const flame = document.getElementById('flame');
         const wishSuccess = document.getElementById('wish-success');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
+        
+        // Gallery Logic
+        const photoDisplay = document.getElementById('photo-display');
+        const photoContainer = document.getElementById('photo-container');
+        const photoCounter = document.getElementById('photo-counter');
+        
+        // Define your 4 photos here. 
+        // If hosting on GitHub, name your files exactly photo1.jpg, photo2.jpg, etc.
+        const photos = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg'];
+        let currentPhotoIndex = 0;
+
+        photoContainer.addEventListener('click', () => {
+            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+            
+            // Animation for photo change
+            photoDisplay.classList.remove('fade-in');
+            void photoDisplay.offsetWidth; // Trigger reflow
+            
+            photoDisplay.src = photos[currentPhotoIndex];
+            photoDisplay.classList.add('fade-in');
+            
+            photoCounter.innerText = `Photo ${currentPhotoIndex + 1} of 4`;
+            
+            // Subtle feedback
+            if (currentPhotoIndex === 0) {
+                showToast("Back to the start! ❤️");
+            }
+        });
 
         let isCandleBlown = false;
 
         function showToast(msg) {
             toastMessage.textContent = msg;
             toast.classList.remove('opacity-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 3000);
+            setTimeout(() => toast.classList.add('opacity-0'), 3000);
         }
 
         blowBtn.addEventListener('click', () => {
             if (isCandleBlown) {
                 fireConfetti();
-                showToast("Yay! Happy Birthday! 🎉");
+                showToast("Happy Birthday! 🎉");
                 return;
             }
-
-            // Blow out animation
             flame.classList.add('out');
             isCandleBlown = true;
-            blowBtn.innerHTML = `<i data-lucide="party-popper" class="w-5 h-5"></i><span>Celebrate Again!</span>`;
+            blowBtn.innerHTML = `<i data-lucide="heart" class="w-5 h-5 text-red-400"></i><span>Celebrate!</span>`;
             lucide.createIcons();
-            
-            // Show Success
-            setTimeout(() => {
-                wishSuccess.classList.remove('opacity-0');
-            }, 300);
-
-            // Celebration Confetti
+            setTimeout(() => wishSuccess.classList.remove('opacity-0'), 300);
             fireConfetti();
-            showToast("Wish made! Happy Birthday! 🎂");
+            showToast("Wish made! 🎂");
         });
 
-
-        // --- Simple Confetti Implementation ---
+        // --- Confetti Engine ---
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        let particles = [];
-
-        canvas.width = width;
-        canvas.height = height;
+        let width = window.innerWidth, height = window.innerHeight, particles = [];
+        canvas.width = width; canvas.height = height;
 
         window.addEventListener('resize', () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
         });
 
         const colors = ['#ec4899', '#8b5cf6', '#f59e0b', '#10b981', '#3b82f6'];
 
         class Particle {
-            constructor(x, y, velocityX, velocityY) {
-                this.x = x;
-                this.y = y;
-                this.velocityX = velocityX;
-                this.velocityY = velocityY;
+            constructor(x, y, vX, vY) {
+                this.x = x; this.y = y; this.vX = vX; this.vY = vY;
                 this.radius = Math.random() * 4 + 2;
                 this.color = colors[Math.floor(Math.random() * colors.length)];
                 this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = Math.random() * 0.1 - 0.05;
-                this.gravity = 0.15;
-                this.friction = 0.99;
+                this.rotS = Math.random() * 0.1 - 0.05;
                 this.opacity = 1;
-                this.decay = Math.random() * 0.01 + 0.005;
             }
-
             update() {
-                this.velocityY += this.gravity;
-                this.velocityX *= this.friction;
-                this.velocityY *= this.friction;
-                
-                this.x += this.velocityX;
-                this.y += this.velocityY;
-                this.rotation += this.rotationSpeed;
-                this.opacity -= this.decay;
+                this.vY += 0.15; this.vX *= 0.99; this.vY *= 0.99;
+                this.x += this.vX; this.y += this.vY; this.rotation += this.rotS;
+                this.opacity -= 0.01;
             }
-
             draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.globalAlpha = this.opacity;
-                ctx.fillStyle = this.color;
-                
-                if (Math.random() > 0.5) {
-                    ctx.beginPath();
-                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    ctx.fillRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
-                }
-                
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity; ctx.fillStyle = this.color;
+                ctx.fillRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
                 ctx.restore();
             }
         }
 
         function fireConfetti() {
-            const particleCount = 100;
-            for (let i = 0; i < particleCount; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const velocity = Math.random() * 10 + 5;
-                const pX = width / 2;
-                const pY = height / 2;
-                const vX = Math.cos(angle) * velocity;
-                const vY = Math.sin(angle) * velocity - 5;
-                particles.push(new Particle(pX, pY, vX, vY));
+            for (let i = 0; i < 80; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const v = Math.random() * 10 + 5;
+                particles.push(new Particle(width / 2, height / 2, Math.cos(a) * v, Math.sin(a) * v - 5));
             }
-            
-            if (!animationRunning) {
-                animate();
-            }
+            if (!animationRunning) animate();
         }
 
         let animationRunning = false;
-
         function animate() {
             animationRunning = true;
             ctx.clearRect(0, 0, width, height);
-            
             for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.update();
-                p.draw();
-                
-                if (p.opacity <= 0 || p.y > height) {
-                    particles.splice(i, 1);
-                }
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].opacity <= 0) particles.splice(i, 1);
             }
-
-            if (particles.length > 0) {
-                requestAnimationFrame(animate);
-            } else {
-                animationRunning = false;
-            }
+            if (particles.length > 0) requestAnimationFrame(animate);
+            else animationRunning = false;
         }
         
-        setTimeout(() => {
-            fireConfetti();
-        }, 1000);
-
+        setTimeout(fireConfetti, 1000);
     </script>
 </body>
 </html>
