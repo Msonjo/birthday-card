@@ -14,6 +14,7 @@
             font-family: 'Quicksand', sans-serif;
             background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             overflow-x: hidden;
+            min-height: 100vh;
         }
         
         h1, h2 {
@@ -28,18 +29,6 @@
 
         .card-shadow {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .balloon {
-            animation: float 6s ease-in-out infinite;
-        }
-        .balloon:nth-child(2) { animation-delay: 2s; }
-        .balloon:nth-child(3) { animation-delay: 4s; }
-
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
         }
 
         /* Candle Flame Animation */
@@ -76,6 +65,31 @@
             z-index: 50;
         }
 
+        /* Floating Elements Animations */
+        .floating-element {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            bottom: -100px;
+            animation: rise linear forwards;
+        }
+
+        @keyframes rise {
+            from { transform: translateY(0) rotate(0deg); opacity: 1; }
+            to { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Static Background Confetti */
+        .static-confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.35;
+            border-radius: 2px;
+        }
+
         .photo-frame {
             position: relative;
             padding: 10px;
@@ -101,25 +115,50 @@
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        .music-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Colorful Cake Layers */
+        .cake-layer-1 { background: #fca5a5; } /* Reddish-pink */
+        .cake-layer-2 { background: #fde047; } /* Yellow */
+        .cake-layer-3 { background: #6ee7b7; } /* Green */
+        
+        .frosting-drip {
+            width: 8px;
+            height: 12px;
+            background: #ffffff;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            top: 10px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 relative">
+<body class="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 relative">
 
     <canvas id="confetti-canvas"></canvas>
 
-    <!-- Floating Balloons Background Elements -->
-    <div class="absolute top-10 left-10 text-pink-400 opacity-50 balloon hidden md:block">
-        <i data-lucide="party-popper" size="48"></i>
-    </div>
-    <div class="absolute bottom-20 right-10 text-purple-400 opacity-50 balloon hidden md:block">
-        <i data-lucide="gift" size="56"></i>
-    </div>
-    <div class="absolute top-1/2 left-4 text-yellow-400 opacity-40 balloon hidden md:block">
-        <i data-lucide="star" size="32"></i>
+    <!-- Container for dynamic floating elements -->
+    <div id="floating-container" class="fixed inset-0 pointer-events-none z-0"></div>
+    
+    <!-- Static Confetti Background -->
+    <div id="static-confetti-bg" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Music Control -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="music-toggle" class="bg-white/80 p-3 rounded-full shadow-lg border border-pink-200 text-pink-500 hover:bg-white transition-colors">
+            <i id="music-icon" data-lucide="music"></i>
+        </button>
     </div>
 
     <!-- Main Card -->
-    <div class="max-w-md w-full glass-panel rounded-3xl card-shadow p-8 text-center relative z-10 my-8">
+    <div class="max-w-md w-full glass-panel rounded-3xl card-shadow p-8 text-center relative z-10 my-10">
         
         <!-- Header -->
         <div class="mb-6">
@@ -129,8 +168,8 @@
         </div>
 
         <!-- PHOTO GALLERY SECTION -->
-        <div class="mb-4 flex flex-col items-center">
-            <div id="photo-container" class="photo-frame rounded-xl w-70 h-80 flex items-center justify-center bg-gray-50 relative overflow-hidden">
+        <div class="mb-6 flex flex-col items-center">
+            <div id="photo-container" class="photo-frame rounded-xl w-64 h-64 flex items-center justify-center bg-gray-50 relative overflow-hidden">
                 <img 
                     id="photo-display"
                     src="sister.jpg" 
@@ -139,13 +178,11 @@
                     onerror="this.src='https://placehold.co/400x400/pink/white?text=Add+Photo+1'; this.style.opacity='0.5';"
                 >
                 
-                <!-- Hint Overlay -->
                 <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
                     <i data-lucide="mouse-pointer-2" class="w-3 h-3"></i>
                     <span>Click to flip</span>
                 </div>
 
-                <!-- Decorative sticker -->
                 <div class="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 rounded-full p-2 shadow-md transform rotate-12 pointer-events-none">
                     <i data-lucide="crown" class="w-6 h-6"></i>
                 </div>
@@ -153,18 +190,35 @@
             <p class="text-xs text-gray-400 mt-3 italic" id="photo-counter">Photo 1 of 4</p>
         </div>
 
-        <!-- Interactive Cake Area -->
-        <div class="relative w-28 h-28 mx-auto mb-6 bg-gradient-to-tr from-pink-200 to-purple-200 rounded-full flex items-center justify-center shadow-inner overflow-hidden group">
-            <div id="cake-container" class="relative transition-transform duration-500 transform group-hover:scale-110 top-2">
-                 <div class="w-16 h-12 bg-amber-200 rounded-lg relative mt-6 shadow-md">
-                     <div class="absolute -top-2 w-full h-4 bg-pink-300 rounded-full"></div>
-                     <div class="absolute top-1 w-full h-6 bg-pink-300 rounded-b-lg opacity-50"></div>
+        <!-- Interactive Colorful Cake Area -->
+        <div class="relative w-32 h-32 mx-auto mb-6 bg-gradient-to-tr from-white to-pink-50 rounded-full flex items-center justify-center shadow-inner overflow-hidden group">
+            <div id="cake-container" class="relative transition-transform duration-500 transform group-hover:scale-110 top-4">
+                 
+                 <!-- Cake Layers (Bottom to Top) -->
+                 <div class="w-20 h-5 cake-layer-1 rounded-sm shadow-sm"></div>
+                 <div class="w-18 h-5 cake-layer-2 rounded-sm mx-auto shadow-sm"></div>
+                 <div class="w-16 h-5 cake-layer-3 rounded-t-lg mx-auto relative shadow-sm">
+                    <!-- Frosting Drips -->
+                    <div class="frosting-drip" style="left: 2px; height: 14px; background: #fff;"></div>
+                    <div class="frosting-drip" style="left: 14px; height: 10px; background: #fff;"></div>
+                    <div class="frosting-drip" style="left: 26px; height: 16px; background: #fff;"></div>
+                    <div class="frosting-drip" style="left: 38px; height: 12px; background: #fff;"></div>
+                    <div class="frosting-drip" style="left: 50px; height: 15px; background: #fff;"></div>
                  </div>
-                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-6 bg-blue-300 border border-blue-400"></div>
-                 <div id="flame" class="flame absolute -top-5 left-1/2 transform -translate-x-1/2 w-3 h-5 bg-yellow-400 rounded-full blur-[1px] shadow-[0_0_10px_#facc15]"></div>
+
+                 <!-- Striped Candle -->
+                 <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-2.5 h-8 bg-blue-400 rounded-sm border border-white overflow-hidden">
+                    <div class="w-full h-1 bg-white opacity-40 my-1 rotate-12"></div>
+                    <div class="w-full h-1 bg-white opacity-40 my-1 rotate-12"></div>
+                 </div>
+
+                 <!-- Flame -->
+                 <div id="flame" class="flame absolute -top-11 left-1/2 transform -translate-x-1/2 w-4 h-6 bg-orange-400 rounded-full blur-[1px] shadow-[0_0_15px_#fb923c]">
+                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-3 bg-yellow-200 rounded-full"></div>
+                 </div>
             </div>
             <div id="wish-success" class="absolute inset-0 flex items-center justify-center bg-white/90 opacity-0 transition-opacity duration-500 pointer-events-none">
-                <p class="text-xs font-bold text-purple-600 font-pacifico">Wish Made!</p>
+                <p class="text-sm font-bold text-purple-600 font-pacifico">Wish Made!</p>
             </div>
         </div>
 
@@ -188,6 +242,11 @@
         <span id="toast-message">Notification</span>
     </div>
 
+    <!-- Audio Element -->
+    <audio id="birthday-song" loop>
+        <source src="birthday-song.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         lucide.createIcons();
 
@@ -196,44 +255,81 @@
         const wishSuccess = document.getElementById('wish-success');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
+        const musicToggle = document.getElementById('music-toggle');
+        const musicIcon = document.getElementById('music-icon');
+        const song = document.getElementById('birthday-song');
+        const floatingContainer = document.getElementById('floating-container');
+        const staticConfettiBg = document.getElementById('static-confetti-bg');
         
+        // --- Static Confetti Scatter (Reduced count for a cleaner look) ---
+        function scatterConfetti() {
+            const confettiColors = ['#ec4899', '#8b5cf6', '#f59e0b', '#10b981', '#3b82f6', '#fb7185'];
+            for (let i = 0; i < 25; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'static-confetti';
+                dot.style.top = Math.random() * 100 + 'vh';
+                dot.style.left = Math.random() * 100 + 'vw';
+                dot.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                dot.style.transform = `rotate(${Math.random() * 360}deg)`;
+                staticConfettiBg.appendChild(dot);
+            }
+        }
+        scatterConfetti();
+
         // Gallery Logic
         const photoDisplay = document.getElementById('photo-display');
         const photoContainer = document.getElementById('photo-container');
         const photoCounter = document.getElementById('photo-counter');
         
-        // Define your 4 photos here. 
-        // If hosting on GitHub, name your files exactly photo1.jpg, photo2.jpg, etc.
-        const photos = ['sister.jpg', 'snow.jpg', 'sgr.jpg', 'airport.jpg'];
+        const photos = ['sister.jpg', 'snow.jpg', 'airport.jpg', 'sgr.jpg'];
         let currentPhotoIndex = 0;
 
         photoContainer.addEventListener('click', () => {
             currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-            
-            // Animation for photo change
             photoDisplay.classList.remove('fade-in');
-            void photoDisplay.offsetWidth; // Trigger reflow
-            
+            void photoDisplay.offsetWidth; 
             photoDisplay.src = photos[currentPhotoIndex];
             photoDisplay.classList.add('fade-in');
-            
             photoCounter.innerText = `Photo ${currentPhotoIndex + 1} of 4`;
-            
-            // Subtle feedback
             if (currentPhotoIndex === 0) {
                 showToast("Back to the start! ❤️");
             }
         });
 
         let isCandleBlown = false;
+        let isMusicPlaying = false;
 
         function showToast(msg) {
             toastMessage.textContent = msg;
             toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 3000);
+            setTimeout(() => toast.classList.add('opacity-0'), 4000);
         }
 
+        // Music Toggle Logic
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                song.pause();
+                musicIcon.setAttribute('data-lucide', 'music');
+                musicToggle.classList.remove('music-pulse');
+                isMusicPlaying = false;
+            } else {
+                song.play().then(() => {
+                    musicIcon.setAttribute('data-lucide', 'volume-2');
+                    musicToggle.classList.add('music-pulse');
+                    isMusicPlaying = true;
+                }).catch((err) => {
+                    console.error("Playback failed:", err);
+                    showToast("Error: Upload 'birthday-song.mp3' to your folder! 🎵");
+                });
+            }
+            lucide.createIcons();
+        }
+
+        musicToggle.addEventListener('click', toggleMusic);
+
         blowBtn.addEventListener('click', () => {
+            if (!isMusicPlaying) toggleMusic();
+
             if (isCandleBlown) {
                 fireConfetti();
                 showToast("Happy Birthday! 🎉");
@@ -246,7 +342,41 @@
             setTimeout(() => wishSuccess.classList.remove('opacity-0'), 300);
             fireConfetti();
             showToast("Wish made! 🎂");
+            
+            for(let i=0; i<15; i++) setTimeout(createFloatingElement, i * 150);
         });
+
+        // --- Floating Elements Logic ---
+        function createFloatingElement() {
+            const types = ['heart', 'party-popper', 'star', 'gift'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const el = document.createElement('div');
+            el.className = 'floating-element';
+            
+            const size = Math.random() * 20 + 20;
+            const left = Math.random() * 100;
+            const duration = Math.random() * 5 + 5;
+            const delay = Math.random() * 2;
+
+            el.style.left = `${left}%`;
+            el.style.animationDuration = `${duration}s`;
+            el.style.animationDelay = `${delay}s`;
+            el.style.opacity = Math.random() * 0.5 + 0.3;
+            
+            const colors = ['#f472b6', '#a78bfa', '#fbbf24', '#60a5fa'];
+            el.style.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            el.innerHTML = `<i data-lucide="${type}" style="width: ${size}px; height: ${size}px;"></i>`;
+            
+            floatingContainer.appendChild(el);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                el.remove();
+            }, (duration + delay) * 1000);
+        }
+
+        setInterval(createFloatingElement, 1500);
 
         // --- Confetti Engine ---
         const canvas = document.getElementById('confetti-canvas');
@@ -305,6 +435,10 @@
             else animationRunning = false;
         }
         
+        setTimeout(fireConfetti, 1000);
+    </script>
+</body>
+</html>       
         setTimeout(fireConfetti, 1000);
     </script>
 </body>
